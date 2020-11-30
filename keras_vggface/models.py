@@ -119,25 +119,31 @@ def senet_identity_block(input_tensor, kernel_size,
 
     return m
 
+def preprocessing():
+    input_shape = (None, None, 3)
+    input = Input(shape=input_shape, batch_size=1)
+
+    x = ChannelReversal()(input)
+    x = Resizing(224, 224, interpolation='bilinear', name="Resize")(x)
+    output = DepthwiseNormalization([91.4953, 103.8827, 131.0912])(x)
+
+    model = Model(input, output, name='preprocessing')
+    return model
+
+
 def SENET50(include_top=True, weights='vggface',
             input_tensor=None, input_shape=None,
             pooling=None,
             classes=8631):
     print("Using modified model")
 
-    # input_shape = (224,224,3)
-    input_shape = (None, None, 3) # Dynamic input tensor shape
+    input_shape = (224,224,3)
     input = Input(shape=input_shape, batch_size=1)
-    # input = Input(shape=input_shape, batch_size=1, dtype=tf.uint8)
     bn_axis = 3
-
-    x = ChannelReversal()(input)
-    x = Resizing(224, 224, interpolation='bilinear', name="Resize")(x)
-    x = DepthwiseNormalization([91.4953, 103.8827, 131.0912])(x)
 
     x = Conv2D(
         64, (7, 7), use_bias=False, strides=(2, 2), padding='same',
-        name='conv1/7x7_s2')(x)
+        name='conv1/7x7_s2')(input)
     
     bn_eps = 0.0001
     x = BatchNormalization(axis=bn_axis, name='conv1/7x7_s2/bn',epsilon=bn_eps)(x)
