@@ -8,20 +8,20 @@
 
 '''
 
-
-from keras.layers import Flatten, Dense, Input, GlobalAveragePooling2D, \
+from tensorflow.keras.layers import Flatten, Dense, Input, GlobalAveragePooling2D, \
     GlobalMaxPooling2D, Activation, Conv2D, MaxPooling2D, BatchNormalization, \
-    AveragePooling2D, Reshape, Permute, multiply
+    AveragePooling2D, Reshape, multiply
 from keras_applications.imagenet_utils import _obtain_input_shape
-from keras.utils import layer_utils
-from keras.utils.data_utils import get_file
-from keras import backend as K
-from keras_vggface import utils
-from keras.engine.topology import get_source_inputs
-import warnings
-from keras.models import Model
-from keras import layers
+from tensorflow.keras import utils
+from tensorflow.keras import backend as K
+from tensorflow.keras.utils import get_source_inputs
+from tensorflow.keras.models import Model
+from tensorflow.keras import layers
+from tensorflow.keras.layers.experimental.preprocessing import Resizing
+from preprocessing import DepthwiseNormalization, ChannelReversal
 
+import constants
+import warnings
 
 def VGG16(include_top=True, weights='vggface',
           input_tensor=None, input_shape=None,
@@ -106,24 +106,24 @@ def VGG16(include_top=True, weights='vggface',
     model = Model(inputs, x, name='vggface_vgg16')  # load weights
     if weights == 'vggface':
         if include_top:
-            weights_path = get_file('rcmalli_vggface_tf_vgg16.h5',
-                                    utils.
+            weights_path = utils.get_file('rcmalli_vggface_tf_vgg16.h5',
+                                    constants.
                                     VGG16_WEIGHTS_PATH,
-                                    cache_subdir=utils.VGGFACE_DIR)
+                                    cache_subdir=constants.VGGFACE_DIR)
         else:
-            weights_path = get_file('rcmalli_vggface_tf_notop_vgg16.h5',
-                                    utils.VGG16_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=utils.VGGFACE_DIR)
+            weights_path = utils.get_file('rcmalli_vggface_tf_notop_vgg16.h5',
+                                    constants.VGG16_WEIGHTS_PATH_NO_TOP,
+                                    cache_subdir=constants.VGGFACE_DIR)
         model.load_weights(weights_path, by_name=True)
         if K.backend() == 'theano':
-            layer_utils.convert_all_kernels_in_model(model)
+            utils.convert_all_kernels_in_model(model)
 
         if K.image_data_format() == 'channels_first':
             if include_top:
                 maxpool = model.get_layer(name='pool5')
                 shape = maxpool.output_shape[1:]
                 dense = model.get_layer(name='fc6')
-                layer_utils.convert_dense_weights_data_format(dense, shape,
+                utils.convert_dense_weights_data_format(dense, shape,
                                                               'channels_first')
 
             if K.backend() == 'tensorflow':
@@ -277,21 +277,21 @@ def RESNET50(include_top=True, weights='vggface',
     # load weights
     if weights == 'vggface':
         if include_top:
-            weights_path = get_file('rcmalli_vggface_tf_resnet50.h5',
-                                    utils.RESNET50_WEIGHTS_PATH,
-                                    cache_subdir=utils.VGGFACE_DIR)
+            weights_path = utils.get_file('rcmalli_vggface_tf_resnet50.h5',
+                                    constants.RESNET50_WEIGHTS_PATH,
+                                    cache_subdir=constants.VGGFACE_DIR)
         else:
-            weights_path = get_file('rcmalli_vggface_tf_notop_resnet50.h5',
-                                    utils.RESNET50_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=utils.VGGFACE_DIR)
+            weights_path = utils.get_file('rcmalli_vggface_tf_notop_resnet50.h5',
+                                    constants.RESNET50_WEIGHTS_PATH_NO_TOP,
+                                    cache_subdir=constants.VGGFACE_DIR)
         model.load_weights(weights_path)
         if K.backend() == 'theano':
-            layer_utils.convert_all_kernels_in_model(model)
+            utils.convert_all_kernels_in_model(model)
             if include_top:
                 maxpool = model.get_layer(name='avg_pool')
                 shape = maxpool.output_shape[1:]
                 dense = model.get_layer(name='classifier')
-                layer_utils.convert_dense_weights_data_format(dense, shape,
+                utils.convert_dense_weights_data_format(dense, shape,
                                                               'channels_first')
 
         if K.image_data_format() == 'channels_first' and K.backend() == 'tensorflow':
@@ -408,11 +408,35 @@ def senet_identity_block(input_tensor, kernel_size,
 
     return m
 
+def preprocessing(output_shape=(224, 224, 3)):
+    """Preprocessing model. Use this as the first model to preprocess images before using the original models.
+    Alternatively, preprocessing can be done using numpy/ PIL and on Android, Android.graphics.bitmap.createBitmap, but
+    they're are not consistent.
+
+    Args:
+        output_shape: The output shape for the processing model, which should match the input
+        shape of the subsequent model, formatted with channels-last
+
+    Returns:
+        model: Keras model containing layers to preprocess images as per the original keras-vggface/utils.preprocess_inputs
+    """
+    input_shape = (None, None, 3)
+    input = Input(shape=input_shape, batch_size=1)
+
+    x = ChannelReversal()(input)
+    x = Resizing(output_shape[0], output_shape[1], interpolation='bilinear', name="Resize")(x)
+    # Normalization values taken from [keras_vggface/utils.py](https://github.com/rcmalli/keras-vggface/blob/719ad75625fe51436b9a9479114b3d136847e11a/keras_vggface/utils.py#L56)
+    output = DepthwiseNormalization([91.4953, 103.8827, 131.0912])(x)
+
+    model = Model(input, output, name='preprocessing')
+    return model
+
 
 def SENET50(include_top=True, weights='vggface',
             input_tensor=None, input_shape=None,
             pooling=None,
             classes=8631):
+
     input_shape = _obtain_input_shape(input_shape,
                                       default_size=224,
                                       min_size=197,
@@ -421,7 +445,7 @@ def SENET50(include_top=True, weights='vggface',
                                       weights=weights)
 
     if input_tensor is None:
-        img_input = Input(shape=input_shape)
+        img_input = Input(shape=input_shape, batch_size=1)
     else:
         if not K.is_keras_tensor(input_tensor):
             img_input = Input(tensor=input_tensor, shape=input_shape)
@@ -437,6 +461,8 @@ def SENET50(include_top=True, weights='vggface',
     x = Conv2D(
         64, (7, 7), use_bias=False, strides=(2, 2), padding='same',
         name='conv1/7x7_s2')(img_input)
+    
+    bn_eps = 0.0001
     x = BatchNormalization(axis=bn_axis, name='conv1/7x7_s2/bn',epsilon=bn_eps)(x)
     x = Activation('relu')(x)
     x = MaxPooling2D((3, 3), strides=(2, 2))(x)
@@ -484,33 +510,13 @@ def SENET50(include_top=True, weights='vggface',
     # load weights
     if weights == 'vggface':
         if include_top:
-            weights_path = get_file('rcmalli_vggface_tf_senet50.h5',
-                                    utils.SENET50_WEIGHTS_PATH,
-                                    cache_subdir=utils.VGGFACE_DIR)
+            weights_path = utils.get_file('rcmalli_vggface_tf_senet50.h5',
+                                    constants.SENET50_WEIGHTS_PATH,
+                                    cache_subdir=constants.VGGFACE_DIR)
         else:
-            weights_path = get_file('rcmalli_vggface_tf_notop_senet50.h5',
-                                    utils.SENET50_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=utils.VGGFACE_DIR)
+            weights_path = utils.get_file('rcmalli_vggface_tf_notop_senet50.h5',
+                                    constants.SENET50_WEIGHTS_PATH_NO_TOP,
+                                    cache_subdir=constants.VGGFACE_DIR)
         model.load_weights(weights_path)
-        if K.backend() == 'theano':
-            layer_utils.convert_all_kernels_in_model(model)
-            if include_top:
-                maxpool = model.get_layer(name='avg_pool')
-                shape = maxpool.output_shape[1:]
-                dense = model.get_layer(name='classifier')
-                layer_utils.convert_dense_weights_data_format(dense, shape,
-                                                              'channels_first')
-
-        if K.image_data_format() == 'channels_first' and K.backend() == 'tensorflow':
-            warnings.warn('You are using the TensorFlow backend, yet you '
-                          'are using the Theano '
-                          'image data format convention '
-                          '(`image_data_format="channels_first"`). '
-                          'For best performance, set '
-                          '`image_data_format="channels_last"` in '
-                          'your Keras config '
-                          'at ~/.keras/keras.json.')
-    elif weights is not None:
-        model.load_weights(weights)
 
     return model

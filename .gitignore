@@ -1,3 +1,6 @@
+venv
+# Not saving model files in repo
+**/*.tflite
 /temp
 /test
 /build
