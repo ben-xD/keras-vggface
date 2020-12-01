@@ -3,11 +3,9 @@
 
 ```python
 import tensorflow as tf
-import keras
 import keras_vggface
 
 print(tf.__version__)
-print(keras.__version__)
 print(keras_vggface.__version__)
 
 ```
