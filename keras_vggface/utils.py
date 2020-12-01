@@ -10,22 +10,9 @@
 import numpy as np
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import get_file
-
-V1_LABELS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_labels_v1.npy'
-V2_LABELS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_labels_v2.npy'
-
-VGG16_WEIGHTS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_vgg16.h5'
-VGG16_WEIGHTS_PATH_NO_TOP = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_notop_vgg16.h5'
+import constants
 
 
-RESNET50_WEIGHTS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_resnet50.h5'
-RESNET50_WEIGHTS_PATH_NO_TOP = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_notop_resnet50.h5'
-
-SENET50_WEIGHTS_PATH = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_senet50.h5'
-SENET50_WEIGHTS_PATH_NO_TOP = 'https://github.com/rcmalli/keras-vggface/releases/download/v2.0/rcmalli_vggface_tf_notop_senet50.h5'
-
-
-VGGFACE_DIR = 'models/vggface'
 
 
 def preprocess_input(x, data_format=None, version=1):
@@ -68,13 +55,13 @@ def decode_predictions(preds, top=5):
     if len(preds.shape) == 2:
         if preds.shape[1] == 2622:
             fpath = get_file('rcmalli_vggface_labels_v1.npy',
-                             V1_LABELS_PATH,
-                             cache_subdir=VGGFACE_DIR)
+                             constants.V1_LABELS_PATH,
+                             cache_subdir=constants.VGGFACE_DIR)
             LABELS = np.load(fpath)
         elif preds.shape[1] == 8631:
             fpath = get_file('rcmalli_vggface_labels_v2.npy',
-                             V2_LABELS_PATH,
-                             cache_subdir=VGGFACE_DIR)
+                             constants.V2_LABELS_PATH,
+                             cache_subdir=constants.VGGFACE_DIR)
             LABELS = np.load(fpath)
         else:
             raise ValueError('`decode_predictions` expects '
