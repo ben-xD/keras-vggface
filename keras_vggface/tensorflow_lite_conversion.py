@@ -51,9 +51,9 @@ def get_predictions_from_png_image_example():
     preprocessed = image_preprocessor.predict(x)
     predictions = model.predict(preprocessed)
     print('Predicted:', libutils.decode_predictions(predictions))
-    # # Output of normal:                                [[["b' A._J._Buckley'", 0.91385096], ["b' Guy_Garvey'", 0.009176245], ["b' Jeff_Corwin'", 0.008781389], ["b' Michael_Voltaggio'", 0.0073467665], ["b' Nick_Frost'", 0.0065856054]]]
-    # # Output of custom preprocessing:                  [[["b' A._J._Buckley'", 0.91558367], ["b' Guy_Garvey'", 0.009039231], ["b' Jeff_Corwin'", 0.008346532], ["b' Michael_Voltaggio'", 0.0071733994], ["b' Nick_Frost'", 0.006603726]]]
-    # # Output of custom preprocessing (separate model): [[["b' A._J._Buckley'", 0.91385096], ["b' Guy_Garvey'", 0.009176245], ["b' Jeff_Corwin'", 0.008781389], ["b' Michael_Voltaggio'", 0.0073467665], ["b' Nick_Frost'", 0.0065856054]]]
+    # Output of normal:                                [[["b' A._J._Buckley'", 0.91385096], ["b' Guy_Garvey'", 0.009176245], ["b' Jeff_Corwin'", 0.008781389], ["b' Michael_Voltaggio'", 0.0073467665], ["b' Nick_Frost'", 0.0065856054]]]
+    # Output of custom preprocessing (1 model):        [[["b' A._J._Buckley'", 0.91558367], ["b' Guy_Garvey'", 0.009039231], ["b' Jeff_Corwin'", 0.008346532], ["b' Michael_Voltaggio'", 0.0071733994], ["b' Nick_Frost'", 0.006603726]]]
+    # (this) output of custom preprocessing (2 model): [[["b' A._J._Buckley'", 0.91385096], ["b' Guy_Garvey'", 0.009176245], ["b' Jeff_Corwin'", 0.008781389], ["b' Michael_Voltaggio'", 0.0073467665], ["b' Nick_Frost'", 0.0065856054]]]
 
 
 if __name__ == "__main__":
