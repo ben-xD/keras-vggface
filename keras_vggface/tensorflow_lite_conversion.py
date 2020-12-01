@@ -1,6 +1,8 @@
 from keras_vggface import VGGFace
 import tensorflow as tf
-from models import preprocessing
+from models import preprocessing_model as preprocessing
+
+TFLITE_FILE_FORMAT = ".tflite"
 
 
 def create_tflite_model_file(keras_model, filename):
@@ -10,8 +12,8 @@ def create_tflite_model_file(keras_model, filename):
       keras_model: a Keras model to be converted
       filename: Filename (with or without `.tflite` extension)
     """
-    if ".tflite" not in filename:
-        filename += ".tflite"
+    if TFLITE_FILE_FORMAT not in filename:
+        filename += TFLITE_FILE_FORMAT
 
     converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)
     tflite_model = converter.convert()
@@ -24,14 +26,14 @@ def get_embeddings_from_png_image_example():
     import numpy as np
     from tensorflow.keras.preprocessing import image
 
-    preprocessing_model = preprocessing(output_shape=(224, 224, 3))
-    model = VGGFace(model="senet50", pooling="avg", include_top=False, input_shape=(224, 224, 3))
+    preprocessing_model = preprocessing()
+    embeddings_model = VGGFace(model="senet50", pooling="avg", include_top=False, input_shape=(224, 224, 3))
 
     img = image.load_img('../image/ajb.jpg', target_size=(224, 224))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
     preprocessed = preprocessing_model.predict(x)
-    embeddings = model.predict(preprocessed)
+    embeddings = embeddings_model.predict(preprocessed)
     print("embeddings: ", embeddings)
 
 

@@ -8,7 +8,7 @@
 import numpy as np
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import get_file
-import constants
+from keras_vggface import constants
 
 
 def preprocess_input(x, data_format=None, version=1):

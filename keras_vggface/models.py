@@ -8,20 +8,22 @@
 
 '''
 
+import warnings
+
+from keras_applications.imagenet_utils import _obtain_input_shape
+from tensorflow.keras import backend as K
+from tensorflow.keras import layers
+from tensorflow.keras import utils
 from tensorflow.keras.layers import Flatten, Dense, Input, GlobalAveragePooling2D, \
     GlobalMaxPooling2D, Activation, Conv2D, MaxPooling2D, BatchNormalization, \
     AveragePooling2D, Reshape, multiply
-from keras_applications.imagenet_utils import _obtain_input_shape
-from tensorflow.keras import utils
-from tensorflow.keras import backend as K
-from tensorflow.keras.utils import get_source_inputs
-from tensorflow.keras.models import Model
-from tensorflow.keras import layers
 from tensorflow.keras.layers.experimental.preprocessing import Resizing
-from preprocessing import DepthwiseNormalization, ChannelReversal
+from tensorflow.keras.models import Model
+from tensorflow.keras.utils import get_source_inputs
 
-import constants
-import warnings
+from keras_vggface import constants
+from keras_vggface.preprocessing import DepthwiseNormalization, ChannelReversal
+
 
 def VGG16(include_top=True, weights='vggface',
           input_tensor=None, input_shape=None,
@@ -408,7 +410,7 @@ def senet_identity_block(input_tensor, kernel_size,
 
     return m
 
-def preprocessing(output_shape=(224, 224, 3)):
+def preprocessing_model(output_shape=(224, 224, 3)):
     """Preprocessing model. Use this as the first model to preprocess images before using the original models.
     Alternatively, preprocessing can be done using numpy/ PIL and on Android, Android.graphics.bitmap.createBitmap, but
     they're are not consistent.
