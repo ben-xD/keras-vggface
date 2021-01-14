@@ -410,7 +410,7 @@ def senet_identity_block(input_tensor, kernel_size,
 
     return m
 
-def create_vggface_preprocessing_model(output_shape=(224, 224, 3)):
+def create_preprocessing_model(output_shape=(224, 224, 3)):
     """Preprocessing model. Use this as the first model to preprocess images before using the original models.
     Alternatively, preprocessing can be done using numpy/ PIL and on Android, Android.graphics.bitmap.createBitmap, but
     they're are not consistent.
@@ -522,3 +522,19 @@ def SENET50(include_top=True, weights='vggface',
         model.load_weights(weights_path)
 
     return model
+
+
+# TODO evaluate if we don't need this, so delete it.
+def create_vggface_with_preprocessing_model(input_shape=(224,224, 3)):
+    """
+    This model incorporates both models used on Android (preprocessing and embeddings) into one,
+    while excluding the resizing part of the preprocessing model.
+    """
+    input = Input(shape=input_shape, batch_size=1)
+    x = ChannelReversal()(input)
+    x = DepthwiseNormalization([91.4953, 103.8827, 131.0912])(x)
+
+    embeddings_model = VGGFace(model="senet50", pooling="avg", include_top=False, input_shape=(224, 224, 3))
+    embeddings_output = embeddings_model(x, training=False)
+
+    return Model(input, embeddings_output, name="vggface-with-preprocessing")
