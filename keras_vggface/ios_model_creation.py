@@ -13,7 +13,7 @@ def create_core_ml_model_file(keras_model, filename):
     if COREML_FILE_FORMAT not in filename:
         filename += COREML_FILE_FORMAT
 
-    image_input = ct.ImageType(shape=(1, 224, 224, 3,), bias=[91.4953, 103.8827, 131.0912], color_layout="BGR")
+    image_input = ct.ImageType(shape=(1, 224, 224, 3,), bias=[-91.4953, -103.8827, -131.0912], color_layout="BGR")
     coreml_model = ct.convert(keras_model, inputs=[image_input])
     write_metadata(coreml_model)
     coreml_model.save(filename)
@@ -35,6 +35,23 @@ def write_metadata(model):
     model.output_description["Identity"] = VggFaceMetadata.Layers.OUTPUT
 
 
+def tensorflow_example():
+    """This example uses TensorFlow instead of CoreML, and was found to give consistent numbers to CoreML"""
+    model = VGGFace(model="senet50", pooling="avg", include_top=False)
+    img = image.load_img('../image/ajb.jpg', target_size=(224, 224))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = utils.preprocess_input(x, version=2)
+    embeddings = model.predict(x)[0]
+    print("TensorFlow embeddings: ", embeddings)
+
+def core_ml_graeme_example():
+    coreml_model = ct.models.MLModel("Graeme.mlmodel")
+    img = image.load_img('../image/ajb.jpg', target_size=(224, 224))
+    output_dictionary = coreml_model.predict({"input_1": img})
+    embeddings = output_dictionary["Identity"][0]
+    print("CoreML (Graeme's model) embeddings: ", embeddings)
+
 def core_ml_example():
     """Example usage to get face embeddings from cropped image of human face"""
     coreml_model = ct.models.MLModel("Face.mlmodel")
@@ -47,11 +64,11 @@ def core_ml_example():
 def create_core_ml_for_tensorflow_preprocessing():
     input = ct.TensorType(shape=(1, 224, 224, 3))
     keras_model = VGGFace(model="senet50", pooling="avg", include_top=False, input_shape=(224, 224, 3))
-    coreml_model = ct.convert(keras_model, inputs=[input])
+    coreml_model = ct.convert(keras_model, source='tensorflow', inputs=[input])
     write_metadata(coreml_model)
     coreml_model.save("Face-without-preprocessing.mlmodel")
 
-def core_ml_with_tensorflow_preprocessing():
+def core_ml_with_tensorflow_preprocessing_example():
     """
     Used to isolate why numbers are significantly different from Android and Python output.
     """
@@ -61,36 +78,26 @@ def core_ml_with_tensorflow_preprocessing():
     x = utils.preprocess_input(x, version=2)
 
     coreml_model = ct.models.MLModel("Face-without-preprocessing.mlmodel")
-    output_dictionary = coreml_model.predict({"input_1": x})
+    output_dictionary = coreml_model.predict({"input_1": x}, useCPUOnly=True)
     embeddings = output_dictionary["Identity"][0]
     print("CoreML embeddings (tensorflow preprocessing): ", embeddings)
-
-
-def tensorflow_example():
-    """This example uses TensorFlow instead of CoreML, and was found to give consistent numbers to CoreML"""
-    model = VGGFace(model="senet50", pooling="avg", include_top=False)
-    img = image.load_img('../image/ajb.jpg', target_size=(224, 224))
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = utils.preprocess_input(x, version=2)
-    embeddings = model.predict(x)
-    print("TensorFlow embeddings: ", embeddings)
 
 
 if __name__ == "__main__":
     # This code is used in https://github.com/popsa-hq/prototype.face-similarity/tree/benb/mobilisation/mobile
 
-    # Example, to test the output
-    # core_ml_example()
-    # tensorflow_example()
-
-    # Removing Preprocessing from CoreML
-    # create_core_ml_for_tensorflow_preprocessing()
-    core_ml_with_tensorflow_preprocessing()
-
     # First attempt: Model does not do resizing and preprocessing is done
     # face_model = VGGFace(model="senet50", pooling="avg", include_top=False, input_shape=(224, 224, 3))
     # create_core_ml_model_file(face_model, "Face.mlmodel")
+
+    # Example, to test the output
+    core_ml_example()
+    core_ml_graeme_example()
+    tensorflow_example()
+
+    # Removing Preprocessing from CoreML
+    # create_core_ml_for_tensorflow_preprocessing()
+    # core_ml_with_tensorflow_preprocessing_example()
 
     # Second attempt (Not yet attempted): Add preprocessing to model.
     # embeddings_with_preprocessing_model = create_vggface_with_preprocessing_model()
