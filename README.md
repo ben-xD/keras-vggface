@@ -6,6 +6,12 @@ This library was forked to provide model-conversion (to TensorFlow Lite for Andr
 - For Android, please see `keras_vggface/android_model_creation.py`
 - For modifying Model metadata, see `keras_vggface/strings_model_metadata.py`
 
+## Prerequisites
+
+- Create virtual environment: `python3 -m venv venv`
+- Activate the environment: `. ./venv/bin/activate`
+- `pip install -e .`
+
 # Original README: keras-vggface [![Build Status](https://travis-ci.org/rcmalli/keras-vggface.svg?branch=master)](https://travis-ci.org/rcmalli/keras-vggface) [![PyPI Status](https://badge.fury.io/py/keras-vggface.svg)](https://badge.fury.io/py/keras-vggface) [![PyPI Status](https://pepy.tech/badge/keras-vggface)](https://pepy.tech/project/keras-vggface)
 
 Oxford VGGFace  Implementation using Keras Functional Framework v2+

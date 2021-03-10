@@ -181,10 +181,10 @@ if __name__ == "__main__":
 
     # # First stage: Image preprocessing model
     # image_preprocessor = create_preprocessing_model()
-    # create_tflite_model_file(image_preprocessor, 'Face-preprocessing.tflite')
+    # create_tflite_model_file(image_preprocessor, 'FaceEmbeddingsPreprocessing.tflite')
     #
     # # Second stage: Face vector calculation
     # embeddings_model = VGGFace(model="senet50", pooling="avg", include_top=False, input_shape=(224, 224, 3))
-    # model_filename = 'Face.tflite'
+    # model_filename = 'FaceEmbeddings.tflite'
     # create_tflite_model_file(embeddings_model, model_filename)
     # write_metadata(model_filename)

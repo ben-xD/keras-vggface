@@ -12,8 +12,8 @@ setup(
     packages=find_packages(exclude=["tools", "training", "temp", "test", "data", "visualize","image",".venv",".github"]),
     zip_safe=False,
     install_requires=[
-        'numpy>=1.9.1', 'scipy>=0.14', 'h5py', 'pillow',
-        'six>=1.9.0', 'pyyaml', 'tflite_support', 'coremltools'
+        'numpy', 'h5py', 'pillow',
+        'six>=1.9.0', 'pyyaml', 'tflite_support', 'coremltools', 'keras_applications'
     ],
     extras_require={
         "tf": ["tensorflow"],

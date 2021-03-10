@@ -87,8 +87,8 @@ if __name__ == "__main__":
     # This code is used in https://github.com/popsa-hq/prototype.face-similarity/tree/benb/mobilisation/mobile
 
     # First attempt: Model does not do resizing and preprocessing is done
-    # face_model = VGGFace(model="senet50", pooling="avg", include_top=False, input_shape=(224, 224, 3))
-    # create_core_ml_model_file(face_model, "Face.mlmodel")
+    face_model = VGGFace(model="senet50", pooling="avg", include_top=False, input_shape=(224, 224, 3))
+    create_core_ml_model_file(face_model, "FaceEmbeddings.mlmodel")
 
     # Example, to test the output
     core_ml_example()
