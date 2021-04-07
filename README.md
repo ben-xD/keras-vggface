@@ -1,4 +1,18 @@
-# keras-vggface [![Build Status](https://travis-ci.org/rcmalli/keras-vggface.svg?branch=master)](https://travis-ci.org/rcmalli/keras-vggface) [![PyPI Status](https://badge.fury.io/py/keras-vggface.svg)](https://badge.fury.io/py/keras-vggface) [![PyPI Status](https://pepy.tech/badge/keras-vggface)](https://pepy.tech/project/keras-vggface)
+# Keras-vggface: Popsa edition
+
+This library was forked to provide model-conversion (to TensorFlow Lite for Android & CoreML for iOS) and mobile-friendly preprocessing (e.g. Normalization, RGB->BGR channel reversal) instead of using the original library implementation which uses python code not available on Android or iOS. As such, this library now depends on [CoreMLTools](https://github.com/apple/coremltools) and TensorFlow Lite related libraries ([tflite-support](https://github.com/tensorflow/tflite-support) and [Tensorflow lite](https://www.tensorflow.org/lite/)).
+
+- For iOS, please see `keras_vggface/ios_model_creation.py`
+- For Android, please see `keras_vggface/android_model_creation.py`
+- For modifying Model metadata, see `keras_vggface/strings_model_metadata.py`
+
+## Prerequisites
+
+- Create virtual environment: `python3 -m venv venv`
+- Activate the environment: `. ./venv/bin/activate`
+- `pip install -e .`
+
+# Original README: keras-vggface [![Build Status](https://travis-ci.org/rcmalli/keras-vggface.svg?branch=master)](https://travis-ci.org/rcmalli/keras-vggface) [![PyPI Status](https://badge.fury.io/py/keras-vggface.svg)](https://badge.fury.io/py/keras-vggface) [![PyPI Status](https://pepy.tech/badge/keras-vggface)](https://pepy.tech/project/keras-vggface)
 
 Oxford VGGFace  Implementation using Keras Functional Framework v2+
 
