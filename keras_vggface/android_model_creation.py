@@ -28,8 +28,9 @@ def create_tflite_model_file(keras_model, filename):
     tflite_model = converter.convert()
     with open(filename, 'wb') as f:
         f.write(tflite_model)
+
     end = time.time()
-    print(f"\n\n{filename} took {end - start} seconds to create.\n\n")
+    print(f"{filename} took {end - start} seconds to create.")
 
 
 def write_metadata(model_filename):

@@ -423,7 +423,7 @@ def create_preprocessing_model(output_shape=(224, 224, 3)):
         model: Keras model containing layers to preprocess images as per the original keras-vggface/utils.preprocess_inputs
     """
     input_shape = (None, None, 3)
-    input = Input(shape=input_shape, batch_size=1)
+    input = Input(shape=input_shape, batch_size=1, name="input_image")
 
     x = ChannelReversal()(input)
     x = Resizing(output_shape[0], output_shape[1], interpolation='bilinear', name="Resize")(x)
@@ -447,7 +447,7 @@ def SENET50(include_top=True, weights='vggface',
                                       weights=weights)
 
     if input_tensor is None:
-        img_input = Input(shape=input_shape, batch_size=1)
+        img_input = Input(shape=input_shape, batch_size=1, name="input_image")
     else:
         if not K.is_keras_tensor(input_tensor):
             img_input = Input(tensor=input_tensor, shape=input_shape)
@@ -530,7 +530,7 @@ def create_vggface_with_preprocessing_model(input_shape=(224,224, 3)):
     This model incorporates both models used on Android (preprocessing and embeddings) into one,
     while excluding the resizing part of the preprocessing model.
     """
-    input = Input(shape=input_shape, batch_size=1)
+    input = Input(shape=input_shape, batch_size=1, name="input_image")
     x = ChannelReversal()(input)
     x = DepthwiseNormalization([91.4953, 103.8827, 131.0912])(x)
 

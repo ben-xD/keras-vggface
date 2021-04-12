@@ -1,3 +1,5 @@
+import time
+
 import coremltools as ct
 
 from keras_vggface import VGGFace
@@ -13,10 +15,15 @@ def create_core_ml_model_file(keras_model, filename):
     if COREML_FILE_FORMAT not in filename:
         filename += COREML_FILE_FORMAT
 
+    start = time.time()
+
     image_input = ct.ImageType(shape=(1, 224, 224, 3,), bias=[-91.4953, -103.8827, -131.0912], color_layout="BGR")
     coreml_model = ct.convert(keras_model, inputs=[image_input])
     write_metadata(coreml_model)
     coreml_model.save(filename)
+
+    end = time.time()
+    print(f"{filename} took {end - start} seconds to create.")
 
 
 def write_metadata(model):
@@ -31,7 +38,7 @@ def write_metadata(model):
     model.license = VggFaceMetadata.LICENSE
     model.version = VggFaceMetadata.VERSION
 
-    model.input_description["input_1"] = VggFaceMetadata.Layers.IOS_INPUT
+    model.input_description["input_image"] = VggFaceMetadata.Layers.IOS_INPUT
     model.output_description["Identity"] = VggFaceMetadata.Layers.OUTPUT
 
 
@@ -48,7 +55,7 @@ def tensorflow_example():
 def core_ml_graeme_example():
     coreml_model = ct.models.MLModel("Graeme.mlmodel")
     img = image.load_img('../image/ajb.jpg', target_size=(224, 224))
-    output_dictionary = coreml_model.predict({"input_1": img})
+    output_dictionary = coreml_model.predict({"input_image": img})
     embeddings = output_dictionary["Identity"][0]
     print("CoreML (Graeme's model) embeddings: ", embeddings)
 
@@ -56,7 +63,7 @@ def core_ml_example():
     """Example usage to get face embeddings from cropped image of human face"""
     coreml_model = ct.models.MLModel("Face.mlmodel")
     img = image.load_img('../image/ajb.jpg', target_size=(224, 224))
-    output_dictionary = coreml_model.predict({"input_1": img})
+    output_dictionary = coreml_model.predict({"input_image": img})
     embeddings = output_dictionary["Identity"][0]
     print("CoreML embeddings: ", embeddings)
 
@@ -78,7 +85,7 @@ def core_ml_with_tensorflow_preprocessing_example():
     x = utils.preprocess_input(x, version=2)
 
     coreml_model = ct.models.MLModel("Face-without-preprocessing.mlmodel")
-    output_dictionary = coreml_model.predict({"input_1": x}, useCPUOnly=True)
+    output_dictionary = coreml_model.predict({"input_image": x}, useCPUOnly=True)
     embeddings = output_dictionary["Identity"][0]
     print("CoreML embeddings (tensorflow preprocessing): ", embeddings)
 
