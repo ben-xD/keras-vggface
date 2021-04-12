@@ -1,8 +1,11 @@
-from keras_vggface import VGGFace
+import time
+
 import tensorflow as tf
 from tflite_support import flatbuffers
 from tflite_support import metadata as _metadata
 from tflite_support import metadata_schema_py_generated as _metadata_fb
+
+from keras_vggface import VGGFace
 from keras_vggface.models import create_preprocessing_model
 from keras_vggface.strings_model_metadata import VggFaceMetadata
 
@@ -19,10 +22,14 @@ def create_tflite_model_file(keras_model, filename):
     if TFLITE_FILE_FORMAT not in filename:
         filename += TFLITE_FILE_FORMAT
 
+    start = time.time()
+
     converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)
     tflite_model = converter.convert()
     with open(filename, 'wb') as f:
         f.write(tflite_model)
+    end = time.time()
+    print(f"\n\n{filename} took {end - start} seconds to create.\n\n")
 
 
 def write_metadata(model_filename):
@@ -43,31 +50,32 @@ def write_metadata(model_filename):
 
 def create_input_metadata():
     input_metadata = _metadata_fb.TensorMetadataT()
+    input_metadata.name = "image"
     input_metadata.description = VggFaceMetadata.Layers.ANDROID_INPUT
     input_metadata.content = _metadata_fb.ContentT()
     input_metadata.content.contentProperties = _metadata_fb.ImagePropertiesT()
-    input_metadata.content.contentProperties.colorSpace = (
-        _metadata_fb.ColorSpaceType.RGB)
-    input_metadata.content.contentPropertiesType = (
-        _metadata_fb.ContentProperties.ImageProperties)
+    input_metadata.content.contentProperties.colorSpace = _metadata_fb.ColorSpaceType.RGB
+    input_metadata.content.contentPropertiesType = _metadata_fb.ContentProperties.ImageProperties
+
+    # Normalization
     input_normalization = _metadata_fb.ProcessUnitT()
-    input_normalization.optionsType = (
-        _metadata_fb.ProcessUnitOptions.NormalizationOptions)
+    input_normalization.optionsType = _metadata_fb.ProcessUnitOptions.NormalizationOptions
     input_normalization.options = _metadata_fb.NormalizationOptionsT()
-    input_normalization.options.mean = [91.4953, 103.8827,
-                                        131.0912]  # Normalize here, and reverse the channels in the Android app (when image is loaded)
+    input_normalization.options.mean = [91.4953,
+                                        103.8827,
+                                        131.0912]
     input_normalization.options.std = [1, 1, 1]
     input_metadata.processUnits = [input_normalization]
+
+    # Input stats
     input_stats = _metadata_fb.StatsT()
-    # input_stats.max = [255]
-    # input_stats.min = [0]
     input_metadata.stats = input_stats
     return input_metadata
 
 
 def create_output_metadata():
     output_metadata = _metadata_fb.TensorMetadataT()
-    output_metadata.name = "embeddings"
+    output_metadata.name = "face_embeddings"
     output_metadata.description = "Embedding vector with 2048 values per face."
     output_metadata.content = _metadata_fb.ContentT()
     output_metadata.content.content_properties = _metadata_fb.FeaturePropertiesT()
@@ -101,7 +109,7 @@ def tensorflow_lite_example():
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)
 
-    interpreter = tf.lite.Interpreter(model_path="Face.tflite")
+    interpreter = tf.lite.Interpreter(model_path="FaceEmbeddings.tflite")
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
@@ -174,17 +182,66 @@ def get_predictions_from_png_image_example():
     # (this) output of custom preprocessing (2 model): [[["b' A._J._Buckley'", 0.91385096], ["b' Guy_Garvey'", 0.009176245], ["b' Jeff_Corwin'", 0.008781389], ["b' Michael_Voltaggio'", 0.0073467665], ["b' Nick_Frost'", 0.0065856054]]]
 
 
+def create_preprocessor_input_metadata():
+    input_meta = _metadata_fb.TensorMetadataT()
+    input_meta.name = "image preprocessing"
+    input_meta.description = (
+        "Input image to be preprocessed. The input image can be of any size."
+    )
+    input_meta.content = _metadata_fb.ContentT()
+    input_meta.content.contentProperties = _metadata_fb.ImagePropertiesT()
+    input_meta.content.contentProperties.colorSpace = _metadata_fb.ColorSpaceType.RGB
+    input_meta.content.contentPropertiesType = _metadata_fb.ContentProperties.ImageProperties
+    input_meta.processUnits = []
+    input_stats = _metadata_fb.StatsT()
+    input_stats.max = [255]
+    input_stats.min = [0]
+    input_meta.stats = input_stats
+    return input_meta
+
+
+def create_preprocessor_output_metadata():
+    output_meta = _metadata_fb.TensorMetadataT()
+    output_meta.name = "Preprocessed image"
+    image_size = 224
+    output_meta.description = f"Preprocessed image, shaped 3 x {image_size} x {image_size}"
+    output_meta.content = _metadata_fb.ContentT()
+    output_meta.content.content_properties = _metadata_fb.FeaturePropertiesT()
+    output_meta.content.contentPropertiesType = (
+        _metadata_fb.ContentProperties.FeatureProperties)
+    return output_meta
+
+
+def write_preprocessor_metadata(image_preprocessor_filename):
+    metadata = _metadata_fb.ModelMetadataT()
+    metadata.description = "A preprocessing model used to channel-reverse, resize and finally depthwise normalize images prior to " \
+                           "processing through the face recognition model, {0}. If you use this model, then don't do " \
+                           "the preprocessing manually since this model does it for you.".format(VggFaceMetadata.NAME)
+    metadata.name = VggFaceMetadata.NAME + " preprocessing"
+    metadata.author = "Ben Butterworth"
+    metadata.license = "Github: See https://github.com/popsa-hq/keras-vggface"
+    metadata.version = VggFaceMetadata.VERSION
+
+    subgraph = _metadata_fb.SubGraphMetadataT()
+    subgraph.inputTensorMetadata = [create_preprocessor_input_metadata()]
+    subgraph.outputTensorMetadata = [create_preprocessor_output_metadata()]
+    metadata.subgraphMetadata = [subgraph]
+
+    save_metadata_to_model_file(metadata, image_preprocessor_filename)
+
+
 if __name__ == "__main__":
-    # This code is used in https://github.com/popsa-hq/prototype.face-similarity/tree/benb/mobilisation/mobile
-    tensorflow_lite_example()
-    tensorflow_custom_preprocessing_example()
+    # tensorflow_lite_example()
+    # tensorflow_custom_preprocessing_example()
 
     # # First stage: Image preprocessing model
-    # image_preprocessor = create_preprocessing_model()
-    # create_tflite_model_file(image_preprocessor, 'FaceEmbeddingsPreprocessing.tflite')
-    #
-    # # Second stage: Face vector calculation
-    # embeddings_model = VGGFace(model="senet50", pooling="avg", include_top=False, input_shape=(224, 224, 3))
-    # model_filename = 'FaceEmbeddings.tflite'
-    # create_tflite_model_file(embeddings_model, model_filename)
-    # write_metadata(model_filename)
+    image_preprocessor = create_preprocessing_model()
+    preprocessor_filename = 'FaceEmbeddingsPreprocessing.tflite'
+    create_tflite_model_file(image_preprocessor, preprocessor_filename)
+    write_preprocessor_metadata(preprocessor_filename)
+
+    # Second stage: Face vector calculation
+    embeddings_model = VGGFace(model="senet50", pooling="avg", include_top=False, input_shape=(224, 224, 3))
+    model_filename = 'FaceEmbeddings.tflite'
+    create_tflite_model_file(embeddings_model, model_filename)
+    write_metadata(model_filename)

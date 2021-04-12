@@ -12,7 +12,7 @@ This library is used by [prototype.face-similarity repo](https://github.com/pops
 
 - Create virtual environment: `python3 -m venv venv`
 - Activate the environment: `. ./venv/bin/activate`
-- `pip install -e .`
+- `pip install -e .` Dependencies are also installed, since they are specified in setup.py
 
 # Original README: keras-vggface [![Build Status](https://travis-ci.org/rcmalli/keras-vggface.svg?branch=master)](https://travis-ci.org/rcmalli/keras-vggface) [![PyPI Status](https://badge.fury.io/py/keras-vggface.svg)](https://badge.fury.io/py/keras-vggface) [![PyPI Status](https://pepy.tech/badge/keras-vggface)](https://pepy.tech/project/keras-vggface)
 

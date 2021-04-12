@@ -13,7 +13,8 @@ setup(
     zip_safe=False,
     install_requires=[
         'numpy', 'h5py', 'pillow',
-        'six>=1.9.0', 'pyyaml', 'tflite_support', 'coremltools', 'keras_applications'
+        'six>=1.9.0', 'pyyaml', 'tflite_support', 'coremltools', 'keras_applications',
+        "tensorflow"
     ],
     extras_require={
         "tf": ["tensorflow"],
