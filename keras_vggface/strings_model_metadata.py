@@ -16,10 +16,12 @@ class VggFaceMetadata:
     VERSION = "1.0.0"
 
     class Layers:
-        IOS_INPUT = "Input face (224x224) to be used to calculate feature vector. Apart from resizing the image to fit the model, the image does not need to be preprocessed, as the CoreML performs channel reversal and normalization."
-        ANDROID_INPUT = "Input image to be classified. The expected image is {0} x {1}, with "
-        "three channels in BGR (blue, green, red) per pixel (NOT RGB). Each value in the "
-        "tensor is four bytes (floating point).".format(224, 224)
+        IOS_INPUT = """Input face (224x224) to be used to calculate feature vector. Apart from resizing the image to 
+        fit the model, the image does not need to be preprocessed, as the CoreML performs channel reversal and 
+        normalization."""
+        ANDROID_INPUT = """Input image to be classified. The expected image is {0} x {1}, with
+        three channels in BGR (blue, green, red) per pixel (NOT RGB). Each value in the 
+        tensor is four bytes (floating point).""".format(224, 224)
         OUTPUT = "A vector of 2048 floats, representing the face."
 
 
