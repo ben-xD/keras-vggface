@@ -66,7 +66,6 @@ def VGGFace(include_top=True, model='vgg16', weights='vggface',
                          '(pre-training on VGGFace Datasets).')
 
     if model == 'vgg16':
-
         if classes is None:
             classes = 2622
 
@@ -80,9 +79,7 @@ def VGGFace(include_top=True, model='vgg16', weights='vggface',
                      weights=weights,
                      classes=classes)
 
-
     if model == 'resnet50':
-
         if classes is None:
             classes = 8631
 
@@ -97,7 +94,6 @@ def VGGFace(include_top=True, model='vgg16', weights='vggface',
                         classes=classes)
 
     if model == 'senet50':
-
         if classes is None:
             classes = 8631
 
@@ -107,6 +103,6 @@ def VGGFace(include_top=True, model='vgg16', weights='vggface',
                 ' as true, `classes` should be 8631')
 
         return SENET50(include_top=include_top, input_tensor=input_tensor,
-                        input_shape=input_shape, pooling=pooling,
-                        weights=weights,
-                        classes=classes)
+                       input_shape=input_shape, pooling=pooling,
+                       weights=weights,
+                       classes=classes)
