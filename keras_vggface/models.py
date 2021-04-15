@@ -17,12 +17,11 @@ from tensorflow.keras import utils
 from tensorflow.keras.layers import Flatten, Dense, Input, GlobalAveragePooling2D, \
     GlobalMaxPooling2D, Activation, Conv2D, MaxPooling2D, BatchNormalization, \
     AveragePooling2D, Reshape, multiply
-from tensorflow.keras.layers.experimental.preprocessing import Resizing
 from tensorflow.keras.models import Model
 from tensorflow.keras.utils import get_source_inputs
 
 from keras_vggface import constants
-from keras_vggface.preprocessing_layers import DepthwiseNormalization, ChannelReversal
+from keras_vggface.preprocessing import DepthwiseNormalization, ChannelReversal
 
 
 def VGG16(include_top=True, weights='vggface',
@@ -109,13 +108,13 @@ def VGG16(include_top=True, weights='vggface',
     if weights == 'vggface':
         if include_top:
             weights_path = utils.get_file('rcmalli_vggface_tf_vgg16.h5',
-                                    constants.
-                                    VGG16_WEIGHTS_PATH,
-                                    cache_subdir=constants.VGGFACE_DIR)
+                                          constants.
+                                          VGG16_WEIGHTS_PATH,
+                                          cache_subdir=constants.VGGFACE_DIR)
         else:
             weights_path = utils.get_file('rcmalli_vggface_tf_notop_vgg16.h5',
-                                    constants.VGG16_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=constants.VGGFACE_DIR)
+                                          constants.VGG16_WEIGHTS_PATH_NO_TOP,
+                                          cache_subdir=constants.VGGFACE_DIR)
         model.load_weights(weights_path, by_name=True)
         if K.backend() == 'theano':
             utils.convert_all_kernels_in_model(model)
@@ -126,7 +125,7 @@ def VGG16(include_top=True, weights='vggface',
                 shape = maxpool.output_shape[1:]
                 dense = model.get_layer(name='fc6')
                 utils.convert_dense_weights_data_format(dense, shape,
-                                                              'channels_first')
+                                                        'channels_first')
 
             if K.backend() == 'tensorflow':
                 warnings.warn('You are using the TensorFlow backend, yet you '
@@ -280,12 +279,12 @@ def RESNET50(include_top=True, weights='vggface',
     if weights == 'vggface':
         if include_top:
             weights_path = utils.get_file('rcmalli_vggface_tf_resnet50.h5',
-                                    constants.RESNET50_WEIGHTS_PATH,
-                                    cache_subdir=constants.VGGFACE_DIR)
+                                          constants.RESNET50_WEIGHTS_PATH,
+                                          cache_subdir=constants.VGGFACE_DIR)
         else:
             weights_path = utils.get_file('rcmalli_vggface_tf_notop_resnet50.h5',
-                                    constants.RESNET50_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=constants.VGGFACE_DIR)
+                                          constants.RESNET50_WEIGHTS_PATH_NO_TOP,
+                                          cache_subdir=constants.VGGFACE_DIR)
         model.load_weights(weights_path)
         if K.backend() == 'theano':
             utils.convert_all_kernels_in_model(model)
@@ -294,7 +293,7 @@ def RESNET50(include_top=True, weights='vggface',
                 shape = maxpool.output_shape[1:]
                 dense = model.get_layer(name='classifier')
                 utils.convert_dense_weights_data_format(dense, shape,
-                                                              'channels_first')
+                                                        'channels_first')
 
         if K.image_data_format() == 'channels_first' and K.backend() == 'tensorflow':
             warnings.warn('You are using the TensorFlow backend, yet you '
@@ -352,23 +351,23 @@ def senet_conv_block(input_tensor, kernel_size, filters,
 
     x = Conv2D(filters1, (1, 1), use_bias=bias, strides=strides,
                name=conv1_reduce_name)(input_tensor)
-    x = BatchNormalization(axis=bn_axis, name=conv1_reduce_name + "/bn",epsilon=bn_eps)(x)
+    x = BatchNormalization(axis=bn_axis, name=conv1_reduce_name + "/bn", epsilon=bn_eps)(x)
     x = Activation('relu')(x)
 
     x = Conv2D(filters2, kernel_size, padding='same', use_bias=bias,
                name=conv3_name)(x)
-    x = BatchNormalization(axis=bn_axis, name=conv3_name + "/bn",epsilon=bn_eps)(x)
+    x = BatchNormalization(axis=bn_axis, name=conv3_name + "/bn", epsilon=bn_eps)(x)
     x = Activation('relu')(x)
 
     x = Conv2D(filters3, (1, 1), name=conv1_increase_name, use_bias=bias)(x)
-    x = BatchNormalization(axis=bn_axis, name=conv1_increase_name + "/bn" ,epsilon=bn_eps)(x)
+    x = BatchNormalization(axis=bn_axis, name=conv1_increase_name + "/bn", epsilon=bn_eps)(x)
 
     se = senet_se_block(x, stage=stage, block=block, bias=True)
 
     shortcut = Conv2D(filters3, (1, 1), use_bias=bias, strides=strides,
                       name=conv1_proj_name)(input_tensor)
     shortcut = BatchNormalization(axis=bn_axis,
-                                  name=conv1_proj_name + "/bn",epsilon=bn_eps)(shortcut)
+                                  name=conv1_proj_name + "/bn", epsilon=bn_eps)(shortcut)
 
     m = layers.add([se, shortcut])
     m = Activation('relu')(m)
@@ -392,16 +391,16 @@ def senet_identity_block(input_tensor, kernel_size,
 
     x = Conv2D(filters1, (1, 1), use_bias=bias,
                name=conv1_reduce_name)(input_tensor)
-    x = BatchNormalization(axis=bn_axis, name=conv1_reduce_name + "/bn",epsilon=bn_eps)(x)
+    x = BatchNormalization(axis=bn_axis, name=conv1_reduce_name + "/bn", epsilon=bn_eps)(x)
     x = Activation('relu')(x)
 
     x = Conv2D(filters2, kernel_size, padding='same', use_bias=bias,
                name=conv3_name)(x)
-    x = BatchNormalization(axis=bn_axis, name=conv3_name + "/bn",epsilon=bn_eps)(x)
+    x = BatchNormalization(axis=bn_axis, name=conv3_name + "/bn", epsilon=bn_eps)(x)
     x = Activation('relu')(x)
 
     x = Conv2D(filters3, (1, 1), name=conv1_increase_name, use_bias=bias)(x)
-    x = BatchNormalization(axis=bn_axis, name=conv1_increase_name + "/bn",epsilon=bn_eps)(x)
+    x = BatchNormalization(axis=bn_axis, name=conv1_increase_name + "/bn", epsilon=bn_eps)(x)
 
     se = senet_se_block(x, stage=stage, block=block, bias=True)
 
@@ -409,39 +408,6 @@ def senet_identity_block(input_tensor, kernel_size,
     m = Activation('relu')(m)
 
     return m
-
-
-def create_preprocessing_model(output_shape=(224, 224, 3), model_variant="senet50"):
-    """Preprocessing model. Use this as the first model to preprocess images before using the original models.
-    Alternatively, preprocessing can be done using numpy/ PIL and on Android, Android.graphics.bitmap.createBitmap, but
-    they're are not consistent.
-
-    The values used as arguments to [DepthwiseNormalization] were taken from [keras_vggface.utils.preprocess_input],
-    specifically, the version 2 parameters. This means this function/ preprocessing model only supports
-    RESNET50 and SENET50, since version 1 is used for VGG16.
-
-    Args:
-        model_variant: either vgg16, resnet50 or senet50.
-        output_shape: The output shape for the processing model, which should match the input
-        shape of the subsequent model, formatted with channels-last
-
-    Returns:
-        model: Keras model containing layers to preprocess images as per the original keras-vggface/utils.preprocess_inputs
-    """
-    input_shape = (None, None, 3)
-    input = Input(shape=input_shape, batch_size=1, name="input_image")
-
-    x = ChannelReversal()(input)
-    x = Resizing(output_shape[0], output_shape[1], interpolation='bilinear', name="Resize")(x)
-    if model_variant == "senet50" or model_variant == "resnet50":
-        output = DepthwiseNormalization([91.4953, 103.8827, 131.0912])(x)
-    if model_variant == "vgg16":
-        output = DepthwiseNormalization([93.5940, 104.7624, 129.1863])(x)
-    else:
-        raise ValueError(f"Unsupported model_variant: {model_variant}")
-
-    model = Model(input, output, name='preprocessing')
-    return model
 
 
 def SENET50(include_top=True, weights='vggface',
@@ -472,9 +438,9 @@ def SENET50(include_top=True, weights='vggface',
     x = Conv2D(
         64, (7, 7), use_bias=False, strides=(2, 2), padding='same',
         name='conv1/7x7_s2')(img_input)
-    
+
     bn_eps = 0.0001
-    x = BatchNormalization(axis=bn_axis, name='conv1/7x7_s2/bn',epsilon=bn_eps)(x)
+    x = BatchNormalization(axis=bn_axis, name='conv1/7x7_s2/bn', epsilon=bn_eps)(x)
     x = Activation('relu')(x)
     x = MaxPooling2D((3, 3), strides=(2, 2))(x)
 
@@ -522,19 +488,19 @@ def SENET50(include_top=True, weights='vggface',
     if weights == 'vggface':
         if include_top:
             weights_path = utils.get_file('rcmalli_vggface_tf_senet50.h5',
-                                    constants.SENET50_WEIGHTS_PATH,
-                                    cache_subdir=constants.VGGFACE_DIR)
+                                          constants.SENET50_WEIGHTS_PATH,
+                                          cache_subdir=constants.VGGFACE_DIR)
         else:
             weights_path = utils.get_file('rcmalli_vggface_tf_notop_senet50.h5',
-                                    constants.SENET50_WEIGHTS_PATH_NO_TOP,
-                                    cache_subdir=constants.VGGFACE_DIR)
+                                          constants.SENET50_WEIGHTS_PATH_NO_TOP,
+                                          cache_subdir=constants.VGGFACE_DIR)
         model.load_weights(weights_path)
 
     return model
 
 
 # TODO evaluate if we don't need this, so delete it.
-def create_vggface_with_preprocessing_model(input_shape=(224,224, 3)):
+def create_vggface_with_preprocessing_model(input_shape=(224, 224, 3)):
     """
     This model incorporates both models used on Android (preprocessing and embeddings) into one,
     while excluding the resizing part of the preprocessing model.
