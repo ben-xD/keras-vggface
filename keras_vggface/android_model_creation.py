@@ -6,7 +6,7 @@ from tflite_support import metadata as _metadata
 from tflite_support import metadata_schema_py_generated as _metadata_fb
 
 from keras_vggface import VGGFace
-from keras_vggface.models import create_preprocessing_model
+from keras_vggface.preprocessing import create_preprocessing_model
 from keras_vggface.strings_model_metadata import VggFaceMetadata
 
 TFLITE_FILE_FORMAT = ".tflite"
