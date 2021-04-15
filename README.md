@@ -2,7 +2,7 @@
 
 This library was forked to provide model-conversion (to TensorFlow Lite for Android & CoreML for iOS) and mobile-friendly preprocessing (e.g. Normalization, RGB->BGR channel reversal) instead of using the original library implementation which uses python code not available on Android or iOS. As such, this library now depends on [CoreMLTools](https://github.com/apple/coremltools) and TensorFlow Lite related libraries ([tflite-support](https://github.com/tensorflow/tflite-support) and [Tensorflow lite](https://www.tensorflow.org/lite/)).
 
-This library is used by [prototype.face-similarity repo](https://github.com/popsa-hq/prototype.face-similarity). Note, this work is not yet merged, and is in the [`mobilisation`](https://github.com/popsa-hq/prototype.face-similarity/pull/39) branch.
+This library is used by [prototype.face-similarity repo](https://github.com/popsa-hq/prototype.face-similarity). Note, this usage is in a [PR](https://github.com/popsa-hq/prototype.face-similarity/pull/39).
 
 - For iOS, please see `keras_vggface/ios_model_creation.py`
 - For Android, please see `keras_vggface/android_model_creation.py`
